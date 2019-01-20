@@ -9,9 +9,7 @@ import org.apache.poi.xwpf.usermodel.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author xuejike
@@ -44,7 +42,12 @@ public  class WordParse {
         xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
         //解析合并run字符串
 
-        tokenParse.parseFormat(tpl, (begin, end, token) -> marginRun(begin,end,xwpfRuns,token));
+        HashMap<XWPFRun, LinkedList<RunTokenInfo>> runTokenMap = new HashMap<>();
+        tokenParse.parseFormat(tpl, (begin, end, token) -> {
+            RunTokenInfo runTokenInfo = marginRun(begin, end, xwpfRuns, token);
+            LinkedList<RunTokenInfo> list = runTokenMap.computeIfAbsent(runTokenInfo.getXwpfRun(), k -> new LinkedList<>());
+            list.add(runTokenInfo);
+        });
 
         tpl.setLength(0);
 
@@ -53,14 +56,14 @@ public  class WordParse {
         System.out.println(tpl);
         tpl.setLength(0);
         List<Object> wordItemList = getWordAllItemList(xwpfDocument);
-        parseWordItemScript(tpl,wordItemList);
+        parseWordItemScript(tpl,wordItemList,runTokenMap);
 
 
         return tpl;
 
     }
 
-    private void parseWordItemScript(StringBuilder tpl, List<Object> wordItemList) {
+    private void parseWordItemScript(StringBuilder tpl, List<Object> wordItemList, HashMap<XWPFRun, LinkedList<RunTokenInfo>> runTokenMap) {
         String[][] params = new String[1][];
         params[0] = new String[]{"index", String.valueOf(wordItemList.size())};
         for (int i = 0; i < wordItemList.size(); i++) {
@@ -83,44 +86,44 @@ public  class WordParse {
             }else if (o instanceof XWPFRun){
                 XWPFRun xwpfRun = (XWPFRun) o;
                 String runText = getRunText(xwpfRun);
-                int[] blockTagIndex = tokenParse.checkHaveBlockTagIndex(runText);
-                if (blockTagIndex !=null){
-                    //存在块代码块标签，块标签，只包裹块代码前后文本
-                    if (blockTagIndex.length > 0){
-                        String txt = "";
-                        if (blockTagIndex[0] > 0){
-                            txt = runText.substring(0, blockTagIndex[0] - 1);
-                        }
-                        if (!txt.isEmpty()){
-                            tpl.append(tokenParse.buildFunction("wordRun",params,txt))
-                                    .append("\n");
-                        }
-
-                        if (blockTagIndex.length == 2 && blockTagIndex[1] >= runText.length()){
-                            String script = runText.substring(blockTagIndex[0], blockTagIndex[1]);
-                            tpl.append(script).append("\n");
-                            txt = runText.substring(blockTagIndex[1]+1);
-                            if (!txt.isEmpty()){
-                                String[][] runSP = new String[2][];
-                                runSP[0] = params[0];
-                                runSP[1] = new String[]{"limit","true"};
-                                tpl.append(tokenParse.buildFunction("wordRun",runSP,txt))
-                                        .append("\n");
-                            }
-
-                        }else{
-                            tpl.append(runText.substring(blockTagIndex[0])).append("\n");
-                        }
-                    }else{
-                        tpl.append(tokenParse.buildFunction("wordRun",params,""))
-                                .append(runText).append("\n");
-                    }
-
-
-                }else{
+                LinkedList<RunTokenInfo> runTokenInfos = runTokenMap.get(xwpfRun);
+                if (runTokenInfos == null){
                     tpl.append(tokenParse.buildFunction("wordRun",params,runText))
                             .append("\n");
+                }else{
+                    String[][] runSP = new String[2][];
+                    runSP[0] = params[0];
+                    runSP[1] = new String[]{"limit","0"};
+                    int begin = 0;
+                    int limit = 0;
+
+                    for (RunTokenInfo info : runTokenInfos) {
+                        if (info.getTplToken().isBlock()){
+                            if (info.beginIndex == 0){
+                                begin = info.endIndex+1;
+                                String tokenKey = runText.substring(info.beginIndex, info.endIndex+1);
+                                tpl.append(tokenKey).append("\n");
+                            }else{
+                                String substring = runText.substring(begin, info.beginIndex);
+                                runSP[1][1] = String.valueOf(limit);
+                                tpl.append(tokenParse.buildFunction("wordRun",runSP,substring))
+                                        .append("\n");
+                                String tokenKey = runText.substring(info.beginIndex, info.endIndex+1);
+                                tpl.append(tokenKey).append("\n");
+                                limit++;
+                                begin = info.endIndex+1;
+                            }
+                        }
+                    }
+                    if (begin < runText.length()){
+                        String substring = runText.substring(begin);
+                        runSP[1][1] = String.valueOf(limit);
+                        tpl.append(tokenParse.buildFunction("wordRun",runSP,substring))
+                                .append("\n");
+                    }
+
                 }
+
             }else if ( o instanceof XWPFTableRow){
                 tpl.append(tokenParse.buildFunction("wordTableRow", params, null))
                         .append("\n");
@@ -236,11 +239,14 @@ public  class WordParse {
     private Collection<? extends XWPFRun> parseParagraph(XWPFParagraph bodyElement) {
         return bodyElement.getRuns();
     }
-    private void marginRun(int[] beginRowNum, int[] endRowNum, List<XWPFRun> runList, TplToken token) {
-
+    private RunTokenInfo marginRun(int[] beginRowNum, int[] endRowNum, List<XWPFRun> runList, TplToken token) {
+        RunTokenInfo runTokenInfo = new RunTokenInfo();
+        runTokenInfo.setTplToken(token);
         if (beginRowNum[0] < endRowNum[0]){
-
             XWPFRun begin = runList.get(beginRowNum[0]);
+            runTokenInfo.setXwpfRun(begin);
+            runTokenInfo.setBeginIndex(beginRowNum[1]);
+
             StringBuilder marginTxt = new StringBuilder(begin.getText(0));
             for (int i = beginRowNum[0]+1; i < endRowNum[0]; i++) {
                 marginTxt.append(runList.get(i).getText(0));
@@ -248,7 +254,7 @@ public  class WordParse {
             }
             XWPFRun lastRun = runList.get(endRowNum[0]);
             String lastText = lastRun.getText(0);
-            String substring = lastText.substring(0, endRowNum[1]);
+            String substring = lastText.substring(0, endRowNum[1]+1);
             marginTxt.append(substring);
             if (lastText.length() >(endRowNum[1]+1)){
                 lastRun.setText(lastText.substring(endRowNum[1]+1),0);
@@ -256,8 +262,13 @@ public  class WordParse {
                 lastRun.setText(C_DEL_TAG,0);
             }
 
+            runTokenInfo.setEndIndex(marginTxt.length()-1);
             begin.setText(marginTxt.toString(),0);
+        }else{
+            runTokenInfo.setBeginIndex(beginRowNum[1]);
+            runTokenInfo.setEndIndex(endRowNum[1]);
         }
+        return runTokenInfo;
     }
 
     public static boolean checkHaveTag(String txt){

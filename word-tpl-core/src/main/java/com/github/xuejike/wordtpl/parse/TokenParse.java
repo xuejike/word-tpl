@@ -53,6 +53,7 @@ public abstract class TokenParse {
             if (c == '\n'){
                 rowNum ++;
                 colNum = 0;
+                continue;
             }else if (model == KeyModel.text){
 
                 if (stack.isEmpty()){

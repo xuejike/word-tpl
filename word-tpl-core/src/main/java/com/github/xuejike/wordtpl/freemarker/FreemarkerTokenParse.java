@@ -10,10 +10,10 @@ public class FreemarkerTokenParse extends TokenParse {
     public FreemarkerTokenParse() {
         super(new TplToken[]{
                 new TplToken("${","}"),
-                new TplToken("<@",">"),
-                new TplToken("</@",">"),
-                new TplToken("</#",">"),
-                new TplToken("<#",">")
+                new TplToken("<@",">",true),
+                new TplToken("</@",">",true),
+                new TplToken("</#",">",true),
+                new TplToken("<#",">",true)
         });
     }
 
