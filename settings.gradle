@@ -1,0 +1,4 @@
+rootProject.name = 'word-tpl'
+include 'word-tpl-core'
+include 'word-tpl-demo'
+
