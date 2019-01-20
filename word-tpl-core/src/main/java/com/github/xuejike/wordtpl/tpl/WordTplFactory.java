@@ -31,6 +31,7 @@ public class WordTplFactory {
         registerFunction(new WordTableCellFunction());
         registerFunction(new WordTableFunction());
         registerFunction(new WordTableRowFunction());
+        registerFunction(new WordScriptFinishFunction());
     }
 
     public void registerFunction(WordTplFunction wordTplFunction){

@@ -94,6 +94,7 @@ public  class WordParse {
                         .append("\n");
             }
         }
+        tpl.append(tokenParse.buildFunction("wordScriptFinish",null,null));
 
     }
 
@@ -135,19 +136,7 @@ public  class WordParse {
         list.addAll(paragraph.getRuns());
     }
 
-    public void appendParagraphScript(StringBuilder scriptSb,List<Object> wordItemList,
-                                      XWPFParagraph paragraph){
 
-        String[][] params = new String[1][];
-        params[0] = new String[]{"index", String.valueOf(wordItemList.size())};
-        wordItemList.add(paragraph);
-        String wordFun = tokenParse.buildFunction("wordP", params, null);
-        scriptSb.append(wordFun).append("\n");
-        List<XWPFRun> runList = paragraph.getRuns();
-        for (XWPFRun xwpfRun : runList) {
-
-        }
-    }
     public String getRunText(XWPFRun xwpfRun){
         String text = xwpfRun.getText(0);
         if (text == null){
@@ -234,7 +223,7 @@ public  class WordParse {
         }
     }
 
-    public static boolean checkTag(String txt){
+    public static boolean checkHaveTag(String txt){
         if (PIC_TAG.equals(txt)){
             return true;
         }

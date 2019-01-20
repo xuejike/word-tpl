@@ -23,7 +23,7 @@ public class WordSetIndexParaFunction implements WordTplFunction {
     public void invoke(WordTpEnvironment environment, Map param, WordTplFunctionBody body) {
         Object index = param.get("index");
         if (index != null){
-            environment.setTplVar(currentPTag,index);
+            environment.setCurrentIndex(currentPTag,index);
         }
 
     }
