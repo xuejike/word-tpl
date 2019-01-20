@@ -4,6 +4,7 @@ import com.github.xuejike.wordtpl.freemarker.FreemarkerTokenParse;
 import com.github.xuejike.wordtpl.tpl.WordTplFactory;
 import com.github.xuejike.wordtpl.word.WordBuild;
 import com.github.xuejike.wordtpl.word.WordParse;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,10 +34,11 @@ public class TestMain {
         tplFactory.addTpl("test",tpl.toString());
         HashMap<String, Object> map = new HashMap<>();
         map.put("xuejike","薛纪克");
-        String buildTpl = tplFactory.buildTpl("test", map);
-//        WordBuild wordBuild = new WordBuild();
-//        wordBuild.buildDoc(buildTpl,tplFile,outFile);
-        System.out.println(buildTpl);
+//        String buildTpl = tplFactory.buildTpl("test", map);
+        WordBuild wordBuild = new WordBuild(tplFactory);
+        XWPFDocument xwpfDocument = wordBuild.execScript(tplFile, tpl.toString(), map);
+        xwpfDocument.write(new FileOutputStream(outFile));
+//        System.out.println(buildTpl);
 
 //        officeToPDF("E:\\project\\word-tpl-script\\儿童报告_网络版_12-25.docx","E:\\project\\word-tpl-script\\word-table_out.pdf");
     }

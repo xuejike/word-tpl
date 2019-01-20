@@ -33,7 +33,6 @@ public class WordBuild {
 
         wordTplFactory.addTpl(tplFile,tplScript);
         String tpl = wordTplFactory.buildTpl(tplFile, data);
-        //剔除未执行的run
 
         return xwpfDocument;
     }

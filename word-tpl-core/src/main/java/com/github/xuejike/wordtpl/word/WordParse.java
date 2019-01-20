@@ -2,6 +2,7 @@ package com.github.xuejike.wordtpl.word;
 
 import com.github.xuejike.wordtpl.parse.TokenParse;
 
+import com.github.xuejike.wordtpl.parse.TplToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
 
@@ -10,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -20,6 +20,7 @@ import java.util.List;
 public  class WordParse {
 
     public static final String PIC_TAG = "@PIC";
+    public static final String  C_DEL_TAG = "@DEL";
 
     protected TokenParse tokenParse;
 
@@ -42,9 +43,15 @@ public  class WordParse {
         //生成初级版本模板字符串
         xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
         //解析合并run字符串
-        tokenParse.parseFormat(tpl, (begin, end, token) -> marginRun(begin,end,xwpfRuns));
+
+        tokenParse.parseFormat(tpl, (begin, end, token) -> marginRun(begin,end,xwpfRuns,token));
+
         tpl.setLength(0);
 
+        //生成初级版本模板字符串
+        xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
+        System.out.println(tpl);
+        tpl.setLength(0);
         List<Object> wordItemList = getWordAllItemList(xwpfDocument);
         parseWordItemScript(tpl,wordItemList);
 
@@ -76,12 +83,40 @@ public  class WordParse {
             }else if (o instanceof XWPFRun){
                 XWPFRun xwpfRun = (XWPFRun) o;
                 String runText = getRunText(xwpfRun);
-                params[0][1]= String.valueOf(wordItemList.size());
-                if (tokenParse.checkHaveBlockTag(runText)){
-                    //存在块代码块标签，块标签不进行包裹
+                int[] blockTagIndex = tokenParse.checkHaveBlockTagIndex(runText);
+                if (blockTagIndex !=null){
+                    //存在块代码块标签，块标签，只包裹块代码前后文本
+                    if (blockTagIndex.length > 0){
+                        String txt = "";
+                        if (blockTagIndex[0] > 0){
+                            txt = runText.substring(0, blockTagIndex[0] - 1);
+                        }
+                        if (!txt.isEmpty()){
+                            tpl.append(tokenParse.buildFunction("wordRun",params,txt))
+                                    .append("\n");
+                        }
 
-                    tpl.append(tokenParse.buildFunction("wordRun",params,null))
-                            .append(runText).append("\n");
+                        if (blockTagIndex.length == 2 && blockTagIndex[1] >= runText.length()){
+                            String script = runText.substring(blockTagIndex[0], blockTagIndex[1]);
+                            tpl.append(script).append("\n");
+                            txt = runText.substring(blockTagIndex[1]+1);
+                            if (!txt.isEmpty()){
+                                String[][] runSP = new String[2][];
+                                runSP[0] = params[0];
+                                runSP[1] = new String[]{"limit","true"};
+                                tpl.append(tokenParse.buildFunction("wordRun",runSP,txt))
+                                        .append("\n");
+                            }
+
+                        }else{
+                            tpl.append(runText.substring(blockTagIndex[0])).append("\n");
+                        }
+                    }else{
+                        tpl.append(tokenParse.buildFunction("wordRun",params,""))
+                                .append(runText).append("\n");
+                    }
+
+
                 }else{
                     tpl.append(tokenParse.buildFunction("wordRun",params,runText))
                             .append("\n");
@@ -201,22 +236,24 @@ public  class WordParse {
     private Collection<? extends XWPFRun> parseParagraph(XWPFParagraph bodyElement) {
         return bodyElement.getRuns();
     }
-    private void marginRun(int[] beginRowNum, int[] endRowNum, List<XWPFRun> runList) {
+    private void marginRun(int[] beginRowNum, int[] endRowNum, List<XWPFRun> runList, TplToken token) {
+
         if (beginRowNum[0] < endRowNum[0]){
+
             XWPFRun begin = runList.get(beginRowNum[0]);
             StringBuilder marginTxt = new StringBuilder(begin.getText(0));
             for (int i = beginRowNum[0]+1; i < endRowNum[0]; i++) {
                 marginTxt.append(runList.get(i).getText(0));
-                runList.get(i).setText("",0);
+                runList.get(i).setText(C_DEL_TAG,0);
             }
             XWPFRun lastRun = runList.get(endRowNum[0]);
             String lastText = lastRun.getText(0);
             String substring = lastText.substring(0, endRowNum[1]);
             marginTxt.append(substring);
             if (lastText.length() >(endRowNum[1]+1)){
-                lastRun.setText(lastText.substring(endRowNum[1]+1));
+                lastRun.setText(lastText.substring(endRowNum[1]+1),0);
             }else{
-                lastRun.setText("",0);
+                lastRun.setText(C_DEL_TAG,0);
             }
 
             begin.setText(marginTxt.toString(),0);

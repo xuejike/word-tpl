@@ -8,9 +8,17 @@ public class TplToken {
     protected String begin;
     protected String end;
 
+    protected boolean block;
+
     public TplToken(String begin, String end) {
         this.begin = begin;
         this.end = end;
+    }
+
+    public TplToken(String begin, String end, boolean block) {
+        this.begin = begin;
+        this.end = end;
+        this.block = block;
     }
 
     public String getBegin() {
@@ -23,4 +31,7 @@ public class TplToken {
     }
 
 
+    public boolean isBlock() {
+        return block;
+    }
 }

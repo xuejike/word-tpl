@@ -34,6 +34,7 @@ public abstract class TokenParse {
     }
     public void parseFormat(StringBuilder txt,TokenCallback tokenCallback){
         Stack<Character> stack = new Stack<>();
+
         KeyModel model = KeyModel.text;
         int rowNum = 0;
         int colNum = 0;
@@ -133,6 +134,7 @@ public abstract class TokenParse {
                     switch (matchStatus){
                         case noMatch:{
                             stack.clear();
+
                             break;
                         }
                         case haveMatch:{
@@ -201,6 +203,8 @@ public abstract class TokenParse {
             colNum ++;
         }
     }
+
+
 
     private MatchStatus matchEndToken(char c, int matchLen, int matchTokenIndex) {
         char[] chars = endToken[matchTokenIndex];
@@ -272,9 +276,9 @@ public abstract class TokenParse {
 
     public abstract String buildFunction(String funName, String[][] params, String body);
 
-    public boolean checkHaveBlockTag(String runTxt) {
+    public int[] checkHaveBlockTagIndex(String runTxt) {
 
-        return false;
+        return null;
     }
 
     public interface TokenCallback{

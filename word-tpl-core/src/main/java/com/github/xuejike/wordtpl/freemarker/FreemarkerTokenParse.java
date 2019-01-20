@@ -36,15 +36,16 @@ public class FreemarkerTokenParse extends TokenParse {
     }
 
     @Override
-    public boolean checkHaveBlockTag(String runTxt) {
+    public int[] checkHaveBlockTagIndex(String runTxt) {
         if (runTxt == null){
-            return false;
+            return null;
         }
         // TODO: 2019/1/20 存在优化调整空间
-        if (runTxt.indexOf("<#") > 0 | runTxt.indexOf("<@")  > 0
-                | runTxt.indexOf("</#") > 0 | runTxt.indexOf("</@") >0 ){
-            return true;
+        int index= -1;
+        if ( (index =runTxt.indexOf("<#")) >= 0 || (index =runTxt.indexOf("</#")) >=0
+                || (index =runTxt.indexOf("<@"))>=0 || (index =runTxt.indexOf("</@"))>=0){
+            return new int[]{index};
         }
-        return false;
+        return null;
     }
 }
