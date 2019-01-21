@@ -24,18 +24,12 @@ public class FreemarkerWordTplFactory extends AbstractWordTplFactory {
     protected StringTemplateLoader tplLoader;
     protected Configuration cfg;
 
-    public FreemarkerWordTplFactory() {
+    @Override
+    protected void initTpl() {
         cfg = new Configuration(Configuration.VERSION_2_3_28);
         tplLoader = new StringTemplateLoader();
         cfg.setTemplateLoader(tplLoader);
-        WordParaFunction wordParaFunction = new WordParaFunction();
-        WordRunFunction wordRunFunction = new WordRunFunction();
-        registerFunction(wordParaFunction);
-        registerFunction(wordRunFunction);
-        registerFunction(new WordTableCellFunction());
-        registerFunction(new WordTableFunction());
-        registerFunction(new WordTableRowFunction());
-        registerFunction(new WordScriptFinishFunction());
+
     }
 
     @Override

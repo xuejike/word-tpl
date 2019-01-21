@@ -3,6 +3,9 @@
 如果只是在word中替换变量，那是我们没用充分利用起word的功能，word-tpl实现了在word中使用我们常用的模板引擎来对word进行内容控制，比如if判断，for循环等，让生成报告更加方便简单。word-tpl中word操作采用POI进行编辑，而不是采用xml生成方式生成的，这样生成的word更加标准。
 
 默认使用的模板引擎是Freemarker，也可以自己扩展替换掉默认的模板引擎。
+
+[TOC]
+
 # 功能说明
 * [x] 变量替换
 * [x] 段落内条件判断
@@ -48,7 +51,7 @@ dependencies {
         // 提前构建脚本，并添加到模板中，以后使用模板名称进行生成word即可，可以避免每次重新构建word脚本
         String script = wordTplUtils.buildTplScript(tplFile);
         wordTplUtils.addTplScript("test",script);
-        wordTplUtils.buildWord(script,outFile,map);
+        wordTplUtils.buildWord("test",outFile,map);
      }
  }
 

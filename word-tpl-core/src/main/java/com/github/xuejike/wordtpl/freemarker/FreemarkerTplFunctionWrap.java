@@ -19,7 +19,7 @@ import java.util.Map;
  */
 @Slf4j
 public class FreemarkerTplFunctionWrap implements TemplateDirectiveModel {
-    WordTplFunction tplFunction;
+    private WordTplFunction tplFunction;
 
     public FreemarkerTplFunctionWrap(WordTplFunction tplFunction) {
         this.tplFunction = tplFunction;

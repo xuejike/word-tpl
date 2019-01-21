@@ -33,6 +33,6 @@ public class TestMain {
         // 提前构建脚本，并添加到模板中，以后使用模板名称进行生成word即可，可以避免每次重新构建word脚本
         String script = wordTplUtils.buildTplScript(tplFile);
         wordTplUtils.addTplScript("test",script);
-        wordTplUtils.buildWord(script,outFile,map);
+        wordTplUtils.buildWord("test",outFile,map);
     }
 }

@@ -22,11 +22,6 @@ public class WordTplUtils {
 
     public WordTplUtils(AbstractWordTplFactory wordTplFactory) {
         this.wordTplFactory = wordTplFactory;
-        ServiceLoader<WordTplFunction> serviceLoader = ServiceLoader.load(WordTplFunction.class);
-        for (WordTplFunction tplFunction : serviceLoader) {
-            wordTplFactory.registerFunction(tplFunction);
-            log.info("spi load function -> {}",tplFunction.getName());
-        }
         wordParse = new WordParse(wordTplFactory.getTokenParse());
 
     }

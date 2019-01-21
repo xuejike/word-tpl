@@ -3,14 +3,34 @@ package com.github.xuejike.wordtpl.tpl;
 import com.github.xuejike.wordtpl.exception.TplBuildException;
 import com.github.xuejike.wordtpl.parse.AbstractTokenParse;
 import com.github.xuejike.wordtpl.parse.TokenParse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * @author xuejike
  */
+@Slf4j
 public abstract class AbstractWordTplFactory {
+    public AbstractWordTplFactory() {
+        initTpl();
+        loadFunction();
+    }
+
+    private void loadFunction() {
+        ServiceLoader<WordTplFunction> serviceLoader = ServiceLoader.load(WordTplFunction.class);
+        log.info("###### SPI Load Function #####");
+        for (WordTplFunction tplFunction : serviceLoader) {
+            registerFunction(tplFunction);
+            log.info("# {}",tplFunction.getName());
+        }
+        log.info("##############################");
+    }
+
+    protected abstract void initTpl();
+
     /**
      * 注册自定义函数
      * @param wordTplFunction
