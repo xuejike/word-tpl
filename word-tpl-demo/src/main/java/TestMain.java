@@ -3,6 +3,7 @@ import com.github.xuejike.wordtpl.exception.TplBuildException;
 import com.github.xuejike.wordtpl.freemarker.FreemarkerTokenParse;
 
 import com.github.xuejike.wordtpl.freemarker.FreemarkerWordTplFactory;
+import com.github.xuejike.wordtpl.tpl.functions.WordRunFunction;
 import com.github.xuejike.wordtpl.word.WordBuild;
 import com.github.xuejike.wordtpl.word.WordParse;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -23,7 +24,15 @@ public class TestMain {
 
         HashMap<String, Object> map = new HashMap<>();
         map.put("xuejike","薛纪克");
-        WordTplUtils wordTplUtils = new WordTplUtils(new FreemarkerWordTplFactory());
+        FreemarkerWordTplFactory tplFactory = new FreemarkerWordTplFactory();
+        tplFactory.registerFunction(new WordRunFunction());
+        WordTplUtils wordTplUtils = new WordTplUtils(tplFactory);
+
+        // 每次构建都会重新生成word-tpl脚本
         wordTplUtils.buildWord(new File(tplFile),outFile,map);
+        // 提前构建脚本，并添加到模板中，以后使用模板名称进行生成word即可，可以避免每次重新构建word脚本
+        String script = wordTplUtils.buildTplScript(tplFile);
+        wordTplUtils.addTplScript("test",script);
+        wordTplUtils.buildWord(script,outFile,map);
     }
 }
