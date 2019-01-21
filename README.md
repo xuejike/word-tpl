@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.xuejike.word-tpl:word-tpl-core:bea94c8e07'
+    implementation 'com.github.xuejike.word-tpl:word-tpl-core:0.1'
 }
 
 
