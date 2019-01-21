@@ -1,23 +1,30 @@
 package com.github.xuejike.wordtpl.word;
 
 import com.github.xuejike.wordtpl.parse.TokenParse;
-
 import com.github.xuejike.wordtpl.parse.TplToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
  * @author xuejike
  */
 @Slf4j
-public  class WordParse {
+public class WordParse {
 
+    /**
+     * 图片占位符
+     */
     public static final String PIC_TAG = "@PIC";
+    /**
+     * 合并后空闲下来的run
+     */
     public static final String  C_DEL_TAG = "@DEL";
 
     protected TokenParse tokenParse;
@@ -26,49 +33,63 @@ public  class WordParse {
         this.tokenParse = tokenParse;
     }
 
-    public StringBuilder word2Tpl(String filePath) throws IOException {
-        return word2Tpl(new File(filePath));
+    public String word2TplScript(String filePath) throws IOException {
+        return word2TplScript(new File(filePath));
     }
-    public StringBuilder word2Tpl(File file) throws IOException {
-       return word2Tpl(new FileInputStream(file));
-    }
-    public StringBuilder word2Tpl(FileInputStream fileInputStream) throws IOException {
-        XWPFDocument xwpfDocument = new XWPFDocument(fileInputStream);
+
+    public String word2TplScript(File file) throws IOException {
+
+        XWPFDocument xwpfDocument = new XWPFDocument(new FileInputStream(file));
 
         StringBuilder tpl = new StringBuilder();
 
         ArrayList<XWPFRun> xwpfRuns = getWordRuns(xwpfDocument);
         //生成初级版本模板字符串
         xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
+        if (log.isDebugEnabled()){
+            log.debug("#####初始版本模板信息#####\n{}",tpl);
+            log.debug("########################");
+        }
         //解析合并run字符串
-
         HashMap<XWPFRun, LinkedList<RunTokenInfo>> runTokenMap = new HashMap<>();
-        tokenParse.parseFormat(tpl, (begin, end, token) -> {
+        tokenParse.parseFormatTpl(tpl, (begin, end, token) -> {
             RunTokenInfo runTokenInfo = marginRun(begin, end, xwpfRuns, token);
             LinkedList<RunTokenInfo> list = runTokenMap.computeIfAbsent(runTokenInfo.getXwpfRun(), k -> new LinkedList<>());
             list.add(runTokenInfo);
         });
 
-        tpl.setLength(0);
+        if (log.isDebugEnabled()){
+            tpl.setLength(0);
+            //生成初级版本模板字符串
+            xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
+            log.debug("####合并后的字符信息####\n{}",tpl.toString());
+            log.debug("########################");
+        }
 
-        //生成初级版本模板字符串
-        xwpfRuns.forEach(r-> appendRunTpl(tpl, r));
-        System.out.println(tpl);
         tpl.setLength(0);
+        tpl.append("\n");
         List<Object> wordItemList = getWordAllItemList(xwpfDocument);
+        HashMap<String, Object> map = new HashMap<>(1);
+        map.put("path",file.getCanonicalPath());
+
         parseWordItemScript(tpl,wordItemList,runTokenMap);
+        if (log.isDebugEnabled()){
+            log.debug("########脚本字符串#######\n{}",tpl.toString());
+            log.debug("########################");
+        }
 
-
-        return tpl;
+        String wordLoad = tokenParse.buildFunction("wordLoad", map, tpl.toString());
+        return wordLoad;
 
     }
 
     private void parseWordItemScript(StringBuilder tpl, List<Object> wordItemList, HashMap<XWPFRun, LinkedList<RunTokenInfo>> runTokenMap) {
-        String[][] params = new String[1][];
-        params[0] = new String[]{"index", String.valueOf(wordItemList.size())};
+        HashMap<String, Object> params = new HashMap<>(2);
+
         for (int i = 0; i < wordItemList.size(); i++) {
             Object o = wordItemList.get(i);
-            params[0][1] = String.valueOf(i);
+            params.clear();
+            params.put("index",i);
             if (o instanceof IBodyElement){
                 switch (((IBodyElement) o).getElementType()){
                     case PARAGRAPH:{
@@ -91,12 +112,10 @@ public  class WordParse {
                     tpl.append(tokenParse.buildFunction("wordRun",params,runText))
                             .append("\n");
                 }else{
-                    String[][] runSP = new String[2][];
-                    runSP[0] = params[0];
-                    runSP[1] = new String[]{"limit","0"};
+
                     int begin = 0;
                     int limit = 0;
-
+                    params.put("limit",limit);
                     for (RunTokenInfo info : runTokenInfos) {
                         if (info.getTplToken().isBlock()){
                             if (info.beginIndex == 0){
@@ -105,8 +124,8 @@ public  class WordParse {
                                 tpl.append(tokenKey).append("\n");
                             }else{
                                 String substring = runText.substring(begin, info.beginIndex);
-                                runSP[1][1] = String.valueOf(limit);
-                                tpl.append(tokenParse.buildFunction("wordRun",runSP,substring))
+
+                                tpl.append(tokenParse.buildFunction("wordRun",params,substring))
                                         .append("\n");
                                 String tokenKey = runText.substring(info.beginIndex, info.endIndex+1);
                                 tpl.append(tokenKey).append("\n");
@@ -117,8 +136,7 @@ public  class WordParse {
                     }
                     if (begin < runText.length()){
                         String substring = runText.substring(begin);
-                        runSP[1][1] = String.valueOf(limit);
-                        tpl.append(tokenParse.buildFunction("wordRun",runSP,substring))
+                        tpl.append(tokenParse.buildFunction("wordRun",params,substring))
                                 .append("\n");
                     }
 
@@ -293,4 +311,5 @@ public  class WordParse {
         }
         return false;
     }
+
 }

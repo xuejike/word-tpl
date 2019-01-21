@@ -3,6 +3,9 @@ package com.github.xuejike.wordtpl.tpl;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +19,13 @@ public abstract class WordTpEnvironment {
     public static final String CURRENT_TABLE_ROW_TAG ="CURRENT_TABLE_ROW_TAG";
     public static final String CURRENT_TABLE_CELL_TAG ="CURRENT_TABLE_CELL_TAG";
 
+
     protected Map<String,Object> envVarMaps = new HashMap<>();
     protected HashMap<Integer,Object> execIndex = new HashMap<>();
 
 
 
-    public void setCurrentIndex(String tag,Object index){
+    public void setCurrentIndex(String tag, Object index){
         setEnvVar(tag,index);
         execIndex.put(Integer.parseInt(String.valueOf(index)),index);
     }
@@ -54,7 +58,7 @@ public abstract class WordTpEnvironment {
     }
 
     public List getWordItemList(){
-        Object tplVar = getTplVar(WORD_ITEM_LIST_KEY);
+        Object tplVar = getEnvVar(WORD_ITEM_LIST_KEY);
         if (tplVar == null){
             throw new RuntimeException("word item list is null");
         }
@@ -74,5 +78,16 @@ public abstract class WordTpEnvironment {
 
     public HashMap<Integer, Object> getExecIndexMap() {
         return execIndex;
+    }
+
+
+    public abstract OutputStream getWordOutput();
+    public abstract Writer getTplResultWriter();
+
+    public void execScriptFinish(){
+
+    }
+    public void execScriptStart(){
+
     }
 }

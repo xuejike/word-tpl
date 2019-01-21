@@ -1,12 +1,15 @@
 package com.github.xuejike.wordtpl.freemarker;
 
-import com.github.xuejike.wordtpl.parse.TokenParse;
+import com.github.xuejike.wordtpl.parse.AbstractTokenParse;
 import com.github.xuejike.wordtpl.parse.TplToken;
+import org.apache.commons.text.StringEscapeUtils;
+
+import java.util.Map;
 
 /**
  * @author xuejike
  */
-public class FreemarkerTokenParse extends TokenParse {
+public class FreemarkerTokenParse extends AbstractTokenParse {
     public FreemarkerTokenParse() {
         super(new TplToken[]{
                 new TplToken("${","}"),
@@ -18,11 +21,12 @@ public class FreemarkerTokenParse extends TokenParse {
     }
 
     @Override
-    public String buildFunction(String funName, String[][] params, String body) {
+    public String buildFunction(String funName, Map<String,Object> params, String body) {
         StringBuilder builder = new StringBuilder().append("<@").append(funName);
         if (params != null){
-            for (String[] param : params) {
-                builder.append(" ").append(param[0]).append("=").append("\"").append(param[1]).append("\" ");
+            for (Map.Entry<String,Object> param : params.entrySet()) {
+                builder.append(" ").append(param.getKey())
+                        .append("=").append("\"").append(StringEscapeUtils.escapeJava(String.valueOf(param.getValue()))).append("\" ");
             }
         }
 
@@ -32,20 +36,7 @@ public class FreemarkerTokenParse extends TokenParse {
         }
         builder.append("</@").append(funName).append(">");
         return builder.toString();
-
     }
 
-    @Override
-    public int[] checkHaveBlockTagIndex(String runTxt) {
-        if (runTxt == null){
-            return null;
-        }
-        // TODO: 2019/1/20 存在优化调整空间
-        int index= -1;
-        if ( (index =runTxt.indexOf("<#")) >= 0 || (index =runTxt.indexOf("</#")) >=0
-                || (index =runTxt.indexOf("<@"))>=0 || (index =runTxt.indexOf("</@"))>=0){
-            return new int[]{index};
-        }
-        return null;
-    }
+
 }

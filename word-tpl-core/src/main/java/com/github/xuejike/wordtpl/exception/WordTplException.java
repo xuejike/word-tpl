@@ -3,7 +3,7 @@ package com.github.xuejike.wordtpl.exception;
 /**
  * @author xuejike
  */
-public class WordTplException extends Exception {
+public class WordTplException extends RuntimeException {
     public WordTplException() {
     }
 

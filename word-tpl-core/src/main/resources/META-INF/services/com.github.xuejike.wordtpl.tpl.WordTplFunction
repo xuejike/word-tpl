@@ -1,0 +1,7 @@
+com.github.xuejike.wordtpl.tpl.functions.WordParaFunction
+com.github.xuejike.wordtpl.tpl.functions.WordRunFunction
+com.github.xuejike.wordtpl.tpl.functions.WordScriptFinishFunction
+com.github.xuejike.wordtpl.tpl.functions.WordTableCellFunction
+com.github.xuejike.wordtpl.tpl.functions.WordTableFunction
+com.github.xuejike.wordtpl.tpl.functions.WordTableRowFunction
+com.github.xuejike.wordtpl.tpl.functions.WordLoadFunction
