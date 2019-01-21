@@ -63,7 +63,7 @@ public abstract class TokenParse {
                         beginRow[1] = colNum;
                         if (log.isDebugEnabled()){
                             log.debug("###匹配到第一个关键字###");
-                            log.debug("");
+                            log.debug("{} > {}",beginRow[0],beginRow[1]);
                         }
                     }
                     //未匹配到，暂不处理
@@ -78,7 +78,6 @@ public abstract class TokenParse {
                                 log.debug("###################");
                                 log.debug("");
                             }
-                            printStack(stack);
                             beginRow[0] = -1;
                             beginRow[1] = -1;
                             stack.clear();
@@ -87,12 +86,7 @@ public abstract class TokenParse {
                         case haveMatch:{
                             //成功匹配关键字，继续匹配
                             stack.push(c);
-                            if (log.isDebugEnabled()){
-                                log.debug("###匹配到关键字###");
-                                log.debug("# {}",printStack(stack));
-                                log.debug("###################");
-                                log.debug("");
-                            }
+                            printMatchKeyWord(stack);
                             break;
                         }
                         case matchSuccess:{
@@ -135,14 +129,19 @@ public abstract class TokenParse {
                     switch (matchStatus){
                         case noMatch:{
                             stack.clear();
-
+                            if (log.isDebugEnabled()){
+                                log.debug("###未匹配成功抛弃###");
+                                log.debug("# {}",printStack(stack));
+                                log.debug("###################");
+                                log.debug("");
+                            }
                             break;
                         }
                         case haveMatch:{
                             stack.push(c);
                             endRow[0]= rowNum;
                             endRow[1] = colNum;
-
+                            printMatchKeyWord(stack);
                             break;
                         }
                         case matchSuccess:{
@@ -150,18 +149,23 @@ public abstract class TokenParse {
                             stack.clear();
                             tokenCallback.findToken(beginRow,endRow,tokens[matchTokenIndex]);
                             model = KeyModel.text;
+
                             beginRow[0] = -1;
                             beginRow[1] = -1;
                             endRow[0]= -1;
                             endRow[1] = -1;
                             //退一步
                             i --;
+
                             if (log.isDebugEnabled()){
+                                log.debug("#{}",printStack(stack));
                                 log.debug("#######退出关键字模式#######");
+
                                 log.debug("------------------------------------");
                                 log.debug("");
                             }
-                            break;
+                            continue;
+
                         }
                         default:{
 
@@ -205,6 +209,15 @@ public abstract class TokenParse {
         }
     }
 
+    private void printMatchKeyWord(Stack<Character> stack) {
+        if (log.isDebugEnabled()){
+            log.debug("###匹配到关键字###");
+            log.debug("# {}",printStack(stack));
+            log.debug("###################");
+            log.debug("");
+        }
+        return;
+    }
 
 
     private MatchStatus matchEndToken(char c, int matchLen, int matchTokenIndex) {

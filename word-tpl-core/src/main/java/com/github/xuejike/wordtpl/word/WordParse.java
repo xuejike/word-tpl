@@ -242,9 +242,19 @@ public  class WordParse {
     private RunTokenInfo marginRun(int[] beginRowNum, int[] endRowNum, List<XWPFRun> runList, TplToken token) {
         RunTokenInfo runTokenInfo = new RunTokenInfo();
         runTokenInfo.setTplToken(token);
+        if (log.isDebugEnabled()){
+            log.debug("#########Token##########");
+            log.debug("# key > {} {}",token.getBegin(),token.getEnd());
+            log.debug("# begin => {} {}",beginRowNum[0],beginRowNum[1]);
+            log.debug("# end => {} {}",endRowNum[0],endRowNum[1]);
+            log.debug("#--------Before---------");
+            for (int i = beginRowNum[0]; i <= endRowNum[0]; i++) {
+                log.debug("{}:{}",i,runList.get(i).getText(0));
+            }
+        }
+        XWPFRun begin = runList.get(beginRowNum[0]);
+        runTokenInfo.setXwpfRun(begin);
         if (beginRowNum[0] < endRowNum[0]){
-            XWPFRun begin = runList.get(beginRowNum[0]);
-            runTokenInfo.setXwpfRun(begin);
             runTokenInfo.setBeginIndex(beginRowNum[1]);
 
             StringBuilder marginTxt = new StringBuilder(begin.getText(0));
@@ -268,6 +278,12 @@ public  class WordParse {
             runTokenInfo.setBeginIndex(beginRowNum[1]);
             runTokenInfo.setEndIndex(endRowNum[1]);
         }
+        if (log.isDebugEnabled()){
+            log.debug("#--------After---------");
+            log.debug("{}",runTokenInfo.getXwpfRun().getText(0));
+            log.debug("# begin>{},end>{}",runTokenInfo.beginIndex,runTokenInfo.endIndex);
+        }
+
         return runTokenInfo;
     }
 

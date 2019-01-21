@@ -23,8 +23,8 @@ public class TestMain {
     public static int status = 0;
 
     public static void main(String[] args) throws IOException, TplBuildException {
-        String tplFile = "D:\\project\\word-tpl\\word-tpl\\var-tpl.docx";
-        String outFile = "D:\\project\\word-tpl\\word-tpl\\var-tpl-out.docx";
+        String tplFile = "E:\\project\\word-tpl\\word-tpl\\var-tpl.docx";
+        String outFile = "E:\\project\\word-tpl\\word-tpl\\var-tpl-out.docx";
         FileInputStream fileInputStream = new FileInputStream(tplFile);
 
         WordParse wordParse = new WordParse(new FreemarkerTokenParse());
