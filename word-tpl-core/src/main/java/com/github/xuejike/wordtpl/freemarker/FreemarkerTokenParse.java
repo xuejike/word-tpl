@@ -25,8 +25,11 @@ public class FreemarkerTokenParse extends AbstractTokenParse {
         StringBuilder builder = new StringBuilder().append("<@").append(funName);
         if (params != null){
             for (Map.Entry<String,Object> param : params.entrySet()) {
+                String val = String.valueOf(param.getValue());
                 builder.append(" ").append(param.getKey())
-                        .append("=").append("\"").append(StringEscapeUtils.escapeJava(String.valueOf(param.getValue()))).append("\" ");
+                        .append("=").append("\"")
+                        .append(val)
+                        .append("\" ");
             }
         }
 
