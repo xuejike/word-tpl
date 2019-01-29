@@ -77,7 +77,11 @@ public class WordScriptFinishFunction implements WordTplFunction {
         } catch (IOException e) {
             throw new WordScriptExecException(e.getMessage(),e);
         }
-
+        try {
+            wordOutput.close();
+        } catch (IOException e) {
+            throw new WordScriptExecException(e);
+        }
         environment.execScriptFinish();
     }
 

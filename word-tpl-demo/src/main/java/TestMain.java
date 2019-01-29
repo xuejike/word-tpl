@@ -20,7 +20,7 @@ import java.util.*;
  */
 public class TestMain {
     public static void main(String[] args) throws IOException, TplBuildException {
-        String tplFile = "E:\\project\\word-tpl\\word-tpl\\抗凝药物基因-终极报告.docx";
+        String tplFile = "E:\\project\\word-tpl\\word-tpl\\var-tpl.docx";
         String outFile = "E:\\project\\word-tpl\\word-tpl\\var-tpl-out.docx";
 
         HashMap<String, Object> map = new HashMap<>();

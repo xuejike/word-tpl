@@ -7,6 +7,7 @@ import com.github.xuejike.wordtpl.tpl.WordTplFunctionBody;
 import com.github.xuejike.wordtpl.word.WordParse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import java.io.*;
 import java.util.List;
@@ -37,6 +38,11 @@ public class WordLoadFunction implements WordTplFunction {
             XWPFDocument xwpfDocument = new XWPFDocument(inputStream);
             List<Object> itemList = WordParse.getWordAllItemList(xwpfDocument);
             environment.setEnvVar(WordTpEnvironment.WORD_ITEM_LIST_KEY,itemList);
+            for (Object o : itemList) {
+                if (o instanceof XWPFRun){
+                    ((XWPFRun) o).setText("",0);
+                }
+            }
 
             environment.setXwpfDocument(xwpfDocument);
         } catch (FileNotFoundException e) {

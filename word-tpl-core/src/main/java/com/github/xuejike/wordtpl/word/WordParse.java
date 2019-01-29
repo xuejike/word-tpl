@@ -38,8 +38,8 @@ public class WordParse {
     }
 
     public String word2TplScript(File file) throws IOException {
-
-        XWPFDocument xwpfDocument = new XWPFDocument(new FileInputStream(file));
+        FileInputStream fileInputStream = new FileInputStream(file);
+        XWPFDocument xwpfDocument = new XWPFDocument(fileInputStream);
 
         StringBuilder tpl = new StringBuilder();
 
@@ -77,7 +77,7 @@ public class WordParse {
             log.debug("########################");
         }
 
-
+        fileInputStream.close();
         return tpl.toString();
 
     }
