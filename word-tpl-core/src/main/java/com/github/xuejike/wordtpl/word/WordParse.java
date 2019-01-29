@@ -295,7 +295,14 @@ public class WordParse {
             String substring = lastText.substring(0, endRowNum[1]+1);
             marginTxt.append(substring);
             if (lastText.length() >(endRowNum[1]+1)){
-                lastRun.setText(lastText.substring(endRowNum[1]+1),0);
+                //补充空白字符串
+                StringBuilder endSb = new StringBuilder();
+                for (int i = 0; i <= endRowNum[1]; i++) {
+                    endSb.append(" ");
+                }
+                log.debug("补充空白字符串:{}",endRowNum[1]);
+                endSb.append(lastText.substring(endRowNum[1]+1));
+                lastRun.setText(endSb.toString(),0);
             }else{
                 lastRun.setText(C_DEL_TAG,0);
             }
@@ -309,6 +316,8 @@ public class WordParse {
         if (log.isDebugEnabled()){
             log.debug("#--------After---------");
             log.debug("{}",runTokenInfo.getXwpfRun().getText(0));
+            log.debug("---");
+
             log.debug("# begin>{},end>{}",runTokenInfo.beginIndex,runTokenInfo.endIndex);
         }
 
