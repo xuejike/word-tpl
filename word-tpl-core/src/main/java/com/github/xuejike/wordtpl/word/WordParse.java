@@ -67,10 +67,9 @@ public class WordParse {
         }
 
         tpl.setLength(0);
-        tpl.append("\n");
+        String wordLoad = tokenParse.buildFunction("wordLoad", null,file.getCanonicalPath());
+        tpl.append(wordLoad).append("\n");
         List<Object> wordItemList = getWordAllItemList(xwpfDocument);
-        HashMap<String, Object> map = new HashMap<>(1);
-        map.put("path",file.getCanonicalPath());
 
         parseWordItemScript(tpl,wordItemList,runTokenMap);
         if (log.isDebugEnabled()){
@@ -78,14 +77,16 @@ public class WordParse {
             log.debug("########################");
         }
 
-        String wordLoad = tokenParse.buildFunction("wordLoad", map, tpl.toString());
-        return wordLoad;
+
+        return tpl.toString();
 
     }
 
     private void parseWordItemScript(StringBuilder tpl, List<Object> wordItemList, HashMap<XWPFRun, LinkedList<RunTokenInfo>> runTokenMap) {
         HashMap<String, Object> params = new HashMap<>(2);
-
+        if (log.isDebugEnabled()){
+            log.debug("##########################生成脚本##########################");
+        }
         for (int i = 0; i < wordItemList.size(); i++) {
             Object o = wordItemList.get(i);
             params.clear();
@@ -106,18 +107,27 @@ public class WordParse {
                 }
             }else if (o instanceof XWPFRun){
                 XWPFRun xwpfRun = (XWPFRun) o;
+
                 String runText = getRunText(xwpfRun);
                 LinkedList<RunTokenInfo> runTokenInfos = runTokenMap.get(xwpfRun);
                 if (runTokenInfos == null){
                     tpl.append(tokenParse.buildFunction("wordRun",params,runText))
                             .append("\n");
                 }else{
-
+                    if (log.isDebugEnabled()){
+                        log.debug("-----------Run解析----------");
+                        log.debug(runText);
+                        log.debug("size => {}",runText.length());
+                        log.debug("---------");
+                    }
                     int begin = 0;
                     int limit = 0;
                     params.put("limit",limit);
                     for (RunTokenInfo info : runTokenInfos) {
                         if (info.getTplToken().isBlock()){
+                            if (log.isDebugEnabled()){
+                                log.debug("token-> {} , {}",info.beginIndex,info.endIndex);
+                            }
                             if (info.beginIndex == 0){
                                 begin = info.endIndex+1;
                                 String tokenKey = runText.substring(info.beginIndex, info.endIndex+1);
@@ -219,7 +229,7 @@ public class WordParse {
                 }
                 case TABLE:
                 {
-                    // TODO: 2019/1/17 暂未实现
+
                     XWPFTable table = (XWPFTable) bodyElement;
                     List<XWPFTableRow> rows = table.getRows();
                     for (XWPFTableRow row : rows) {

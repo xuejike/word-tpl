@@ -1,5 +1,6 @@
 package com.github.xuejike.wordtpl.tpl;
 
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
@@ -22,6 +23,7 @@ public abstract class WordTpEnvironment {
 
     protected Map<String,Object> envVarMaps = new HashMap<>();
     protected HashMap<Integer,Object> execIndex = new HashMap<>();
+    protected XWPFDocument xwpfDocument;
 
 
 
@@ -89,5 +91,13 @@ public abstract class WordTpEnvironment {
     }
     public void execScriptStart(){
 
+    }
+
+    public XWPFDocument getXwpfDocument() {
+        return xwpfDocument;
+    }
+
+    public void setXwpfDocument(XWPFDocument xwpfDocument) {
+        this.xwpfDocument = xwpfDocument;
     }
 }

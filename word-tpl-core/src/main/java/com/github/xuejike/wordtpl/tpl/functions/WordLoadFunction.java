@@ -25,22 +25,20 @@ public class WordLoadFunction implements WordTplFunction {
 
     @Override
     public void invoke(WordTpEnvironment environment, Map param, WordTplFunctionBody body) throws WordScriptExecException {
-        Object path = param.get("path");
-        if (path ==null){
-            throw new WordScriptExecException("模板文件不存在,请重新生成脚本");
-        }
+
+
         try {
             environment.execScriptStart();
-            FileInputStream inputStream = new FileInputStream(String.valueOf(path));
+            String path = body.exec();
+            if (path ==null){
+                throw new WordScriptExecException("模板文件不存在,请重新生成脚本");
+            }
+            FileInputStream inputStream = new FileInputStream(path);
             XWPFDocument xwpfDocument = new XWPFDocument(inputStream);
             List<Object> itemList = WordParse.getWordAllItemList(xwpfDocument);
             environment.setEnvVar(WordTpEnvironment.WORD_ITEM_LIST_KEY,itemList);
-            body.exec();
-            OutputStream wordOutput = environment.getWordOutput();
-            xwpfDocument.write(wordOutput);
-            wordOutput.flush();
-            environment.execScriptFinish();
 
+            environment.setXwpfDocument(xwpfDocument);
         } catch (FileNotFoundException e) {
             throw new WordScriptExecException("模板文件不存在,请重新生成脚本");
         } catch (IOException e) {

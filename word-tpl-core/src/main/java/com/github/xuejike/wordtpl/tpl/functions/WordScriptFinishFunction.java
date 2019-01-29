@@ -1,11 +1,14 @@
 package com.github.xuejike.wordtpl.tpl.functions;
 
+import com.github.xuejike.wordtpl.exception.WordScriptExecException;
 import com.github.xuejike.wordtpl.tpl.WordTpEnvironment;
 import com.github.xuejike.wordtpl.tpl.WordTplFunction;
 import com.github.xuejike.wordtpl.tpl.WordTplFunctionBody;
 import com.github.xuejike.wordtpl.word.WordParse;
 import org.apache.poi.xwpf.usermodel.*;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -65,6 +68,17 @@ public class WordScriptFinishFunction implements WordTplFunction {
 
 
 
+
+
+        OutputStream wordOutput = environment.getWordOutput();
+        XWPFDocument xwpfDocument = environment.getXwpfDocument();
+        try {
+            xwpfDocument.write(wordOutput);
+        } catch (IOException e) {
+            throw new WordScriptExecException(e.getMessage(),e);
+        }
+
+        environment.execScriptFinish();
     }
 
     private void removeItemInWord(Object key, HashMap<Object, Integer> delMap) {

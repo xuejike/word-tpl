@@ -10,7 +10,9 @@ repositories {
     maven { url 'https://jitpack.io' }
 
 }
-
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
 dependencies {
     compile project(":word-tpl-core")
 //    implementation 'com.github.xuejike.word-tpl:word-tpl-core:bea94c8e07'
