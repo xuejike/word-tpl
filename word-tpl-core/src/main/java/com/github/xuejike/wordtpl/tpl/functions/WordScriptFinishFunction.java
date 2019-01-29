@@ -5,6 +5,7 @@ import com.github.xuejike.wordtpl.tpl.WordTpEnvironment;
 import com.github.xuejike.wordtpl.tpl.WordTplFunction;
 import com.github.xuejike.wordtpl.tpl.WordTplFunctionBody;
 import com.github.xuejike.wordtpl.word.WordParse;
+import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.IOException;
@@ -87,8 +88,18 @@ public class WordScriptFinishFunction implements WordTplFunction {
 
     private void removeItemInWord(Object key, HashMap<Object, Integer> delMap) {
         if (key instanceof XWPFParagraph){
-            int index = ((XWPFParagraph) key).getDocument().getBodyElements().indexOf(key);
-            ((XWPFParagraph) key).getDocument().removeBodyElement(index);
+            IBody body = ((XWPFParagraph) key).getBody();
+            if (body instanceof XWPFTableCell){
+                int indexOf = body.getParagraphs().indexOf(key);
+                ((XWPFTableCell) body).removeParagraph(indexOf);
+            }else if (body instanceof XWPFDocument){
+                int indexOf = body.getBodyElements().indexOf(key);
+                ((XWPFDocument) body).removeBodyElement(indexOf);
+            }else{
+                int index = ((XWPFParagraph) key).getDocument().getParagraphs().indexOf(key);
+                ((XWPFParagraph) key).getDocument().removeBodyElement(index);
+            }
+
         }else if (key instanceof XWPFRun){
             XWPFParagraph parent = (XWPFParagraph) ((XWPFRun) key).getParent();
             Integer delCount = delMap.get(parent);
